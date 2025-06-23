@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Secure PassManager</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+        body {
+            min-height: 100vh;
+            background: #0f181a;
+            color: #00ff41;
+            font-family: 'Share Tech Mono', monospace;
+            position: relative;
+            overflow-x: hidden;
+        }
+        /* Matrix animation */
+        .matrix-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 0;
+            pointer-events: none;
+        }
+        .background-logo {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(1.1);
+            z-index: 1;
+            opacity: 0.18;
+            width: 50vw;
+            max-width: 400px;
+            min-width: 180px;
+            pointer-events: none;
+            filter: drop-shadow(0 0 32px #00ff41cc);
+        }
+        .card {
+            border-radius: 1.5rem;
+            box-shadow: 0 0 32px 0 #00ff4190, 0 0 8px #00ff41;
+            background: rgba(10, 20, 10, 0.98);
+            color: #00ff41;
+            z-index: 2;
+            font-family: 'Share Tech Mono', monospace;
+            border: 1.5px solid #00ff41;
+            transition: box-shadow 0.5s, background 0.7s;
+        }
+        .card:hover {
+            box-shadow: 0 0 48px 0 #00ff41cc, 0 0 16px #00ff41;
+            background: rgba(20, 40, 20, 0.99);
+        }
+        .btn-primary {
+            background: #00ff41;
+            border: none;
+            color: #0f181a;
+            font-weight: bold;
+            text-shadow: 0 0 8px #00ff41;
+            box-shadow: 0 0 12px #00ff41a0;
+            font-family: 'Share Tech Mono', monospace;
+            transition: background 0.5s, color 0.5s, box-shadow 0.5s;
+        }
+        .btn-primary:hover {
+            background: #0f181a;
+            color: #00ff41;
+            box-shadow: 0 0 24px #00ff41cc;
+            border: 1.5px solid #00ff41;
+        }
+        .form-control {
+            background: #0f181a;
+            color: #00ff41;
+            border: 1.5px solid #00ff41;
+            font-family: 'Share Tech Mono', monospace;
+            transition: border-color 0.4s, background 0.4s;
+        }
+        .form-control:focus {
+            background: #0f181a;
+            color: #00ff41;
+            border-color: #00ff41;
+            box-shadow: 0 0 8px #00ff41cc;
+        }
+        .card-title {
+            text-shadow: 0 0 8px #00ff41, 0 0 2px #00ff41;
+        }
+    </style>
+</head>
+<body>
+    <canvas class="matrix-bg"></canvas>
+    <div class="background-logo">
+        <!-- Neon green lock icon -->
+        <svg viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="hackerLockGradient" x1="0" y1="0" x2="300" y2="300" gradientUnits="userSpaceOnUse">
+                    <stop stop-color="#00ff41"/>
+                    <stop offset="1" stop-color="#0f181a"/>
+                </linearGradient>
+            </defs>
+            <rect x="60" y="135" width="180" height="100" rx="30" fill="url(#hackerLockGradient)"/>
+            <ellipse cx="150" cy="185" rx="28" ry="34" fill="#0f181a"/>
+            <rect x="126" y="165" width="48" height="60" rx="14" fill="#0f181a"/>
+            <path d="M90 135V90a60 60 0 0 1 120 0v45" stroke="#00ff41" stroke-width="16" stroke-linecap="round" fill="none"/>
+        </svg>
+    </div>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h3 class="card-title text-center mb-4">Master Login</h3>
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                          {% if messages %}
+                            {% for category, message in messages %}
+                              <div class="alert alert-{{ category }}">{{ message }}</div>
+                            {% endfor %}
+                          {% endif %}
+                        {% endwith %}
+                        <form method="POST">
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Master Password</label>
+                                <input type="password" class="form-control" id="password" name="password" required autofocus>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">Login</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+    // Matrix animation
+    const canvas = document.querySelector('.matrix-bg');
+    const ctx = canvas.getContext('2d');
+    let width = window.innerWidth;
+    let height = window.innerHeight;
+    canvas.width = width;
+    canvas.height = height;
+    const letters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()';
+    const fontSize = 18;
+    const columns = Math.floor(width / fontSize);
+    const drops = Array(columns).fill(1);
+    function drawMatrix() {
+        ctx.fillStyle = 'rgba(15,24,26,0.15)';
+        ctx.fillRect(0, 0, width, height);
+        ctx.font = fontSize + "px 'Share Tech Mono', monospace";
+        ctx.fillStyle = '#00ff41';
+        for (let i = 0; i < drops.length; i++) {
+            const text = letters[Math.floor(Math.random() * letters.length)];
+            ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+            if (drops[i] * fontSize > height && Math.random() > 0.975) {
+                drops[i] = 0;
+            }
+            drops[i]++;
+        }
+    }
+    setInterval(drawMatrix, 50);
+    window.addEventListener('resize', () => {
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = width;
+        canvas.height = height;
+    });
+    </script>
+</body>
+</html> 
